@@ -71,9 +71,7 @@ def generate_user_activity():
         "rating": Decimal(
             round(random.uniform(1, 5), 2)
         ),  # Convert to float to match DecimalType requirement
-        "profile_picture": fake.binary(
-            length=100 * 100
-        ),  # random picture of 100x100 pixels
+        "profile_picture": fake.binary(length=random.randint(1, 100)),
         "signup_date": fake.date_this_decade(),
         "tags": [fake.word() for _ in range(random.randint(1, 5))],
         "preferences": {fake.word(): fake.word() for _ in range(random.randint(1, 3))},
@@ -327,7 +325,7 @@ df = spark.createDataFrame(
 
 # Define table path and base configurations
 TABLE_NAME = "user_activity_log"
-DATABASE = "hudi_p2"
+DATABASE = "regression_hudi"
 
 spark.sql("create database if not exists " + DATABASE)
 spark.sql("use " + DATABASE)
