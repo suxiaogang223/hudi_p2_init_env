@@ -195,8 +195,75 @@ schema = StructType(
 )
 
 
+def create_hudi_table(table_name, table_path, table_type, partition_field=None):
+    """Function to create Hudi tables based on type and partition"""
+
+    # SQL template for creating Hudi tables
+    sql_template = """
+        CREATE TABLE {table_name} (
+            user_id STRING,
+            event_id BIGINT,
+            age INT,
+            event_time TIMESTAMP,
+            is_active BOOLEAN,
+            rating DECIMAL(10, 2),
+            profile_picture BINARY,
+            signup_date DATE,
+            tags ARRAY<STRING>,
+            preferences MAP<STRING, STRING>,
+            address STRUCT<
+                city: STRING,
+                state: STRING,
+                postal_code: STRING,
+                coordinates: STRUCT<
+                    latitude: DOUBLE,
+                    longitude: DOUBLE
+                >
+            >,
+            purchases ARRAY<STRUCT<
+                item: STRUCT<
+                    item_id: STRING,
+                    item_name: STRING,
+                    category: ARRAY<STRING>,
+                    price: DECIMAL(8, 2),
+                    purchase_date: DATE
+                >,
+                shipping_details: STRUCT<
+                    address: STRUCT<
+                        street: STRING,
+                        city: STRING,
+                        postal_code: STRING
+                    >,
+                    expected_delivery: DATE
+                >
+            >>
+        )
+        USING hudi
+        {partition_clause}
+        LOCATION '{table_path}'
+        OPTIONS (
+            type = '{table_type}',
+            primaryKey = 'user_id',
+            preCombineField = 'event_time'
+        )
+    """
+    partition_clause = f"PARTITIONED BY ({partition_field})" if partition_field else ""
+    create_table_sql = sql_template.format(
+        table_name=table_name,
+        table_path=table_path,
+        table_type=table_type,
+        partition_clause=partition_clause,
+    )
+    spark.sql("drop table if exists " + table_name)
+    spark.sql(create_table_sql)
+
+
 def write_hudi_table(
-    dataframe, table_name, table_path, table_type, partition_field=None
+    table_name,
+    table_path,
+    table_type,
+    dataframe,
+    partition_field=None,
 ):
     """Write DataFrame to Hudi table with specified configurations"""
     hudi_options = {
@@ -216,9 +283,14 @@ def write_hudi_table(
     )
 
 
-# Define table path and base configurations
-TABLE_PATH = "hdfs://hdfs-cluster/user/hive/warehouse/syt_hudi_test.db/"
-TABLE_NAME = "user_activity_log"
+def init_hudi_table(table_name, table_type, database, dataframe, partition_field=None):
+    """Initialize a Hudi table with the specified configurations"""
+    path_base = "hdfs://hdfs-cluster/user/hive/warehouse/"
+    table_path = path_base + database + ".db/" + table_name
+    write_hudi_table(table_name, table_path, table_type, dataframe, partition_field)
+    create_hudi_table(table_name, table_path, table_type, partition_field)
+    print(f"Table {table_name} successfully initialized!")
+
 
 # Generate a list of random user activity data
 user_activity_data = [generate_user_activity() for _ in range(args.num_records)]
@@ -245,32 +317,18 @@ df = spark.createDataFrame(
     schema=schema,
 )
 
+# Define table path and base configurations
+TABLE_NAME = "user_activity_log"
+DATABASE = "hudi_p2"
+
 # Create various Hudi tables
-write_hudi_table(
-    df,
-    TABLE_NAME + "_cow_non_partition",
-    TABLE_PATH + "_cow_non_partition",
-    "COPY_ON_WRITE",
+init_hudi_table(TABLE_NAME + "_cow_non_partition", "COPY_ON_WRITE", DATABASE, df)
+init_hudi_table(TABLE_NAME + "_mor_non_partition", "MERGE_ON_READ", DATABASE, df)
+init_hudi_table(
+    TABLE_NAME + "_cow_partition", "COPY_ON_WRITE", DATABASE, df, "signup_date"
 )
-write_hudi_table(
-    df,
-    TABLE_NAME + "_mor_non_partition",
-    TABLE_PATH + "_mor_non_partition",
-    "MERGE_ON_READ",
-)
-write_hudi_table(
-    df,
-    TABLE_NAME + "_cow_partition",
-    TABLE_PATH + "_cow_partition",
-    "COPY_ON_WRITE",
-    partition_field="signup_date",
-)
-write_hudi_table(
-    df,
-    TABLE_NAME + "_mor_partition",
-    TABLE_PATH + "_mor_partition",
-    "MERGE_ON_READ",
-    partition_field="signup_date",
+init_hudi_table(
+    TABLE_NAME + "_mor_partition", "MERGE_ON_READ", DATABASE, df, "signup_date"
 )
 
 print("All Hudi tables successfully written!")
