@@ -27,6 +27,18 @@ from pyspark.sql.types import (
     TimestampType,
 )
 
+# Parse command-line arguments
+parser = argparse.ArgumentParser(
+    description="Generate random user activity log data and write to Hudi tables."
+)
+parser.add_argument(
+    "--num_records",
+    type=int,
+    default=100,
+    help="Number of user activity records to generate",
+)
+args = parser.parse_args()
+
 fake = Faker()
 
 # Initialize Spark session
@@ -43,20 +55,9 @@ spark = (
         "spark.sql.catalog.spark_catalog",
         "org.apache.spark.sql.hudi.catalog.HoodieCatalog",
     )
+    .enableHiveSupport()
     .getOrCreate()
 )
-
-# Parse command-line arguments
-parser = argparse.ArgumentParser(
-    description="Generate random user activity log data and write to Hudi tables."
-)
-parser.add_argument(
-    "--num_records",
-    type=int,
-    default=100,
-    help="Number of user activity records to generate",
-)
-args = parser.parse_args()
 
 
 def generate_user_activity():
@@ -70,7 +71,9 @@ def generate_user_activity():
         "rating": Decimal(
             round(random.uniform(1, 5), 2)
         ),  # Convert to float to match DecimalType requirement
-        "profile_picture": None,  # Removed image generation to avoid PIL dependency
+        "profile_picture": fake.binary(
+            length=100 * 100
+        ),  # random picture of 100x100 pixels
         "signup_date": fake.date_this_decade(),
         "tags": [fake.word() for _ in range(random.randint(1, 5))],
         "preferences": {fake.word(): fake.word() for _ in range(random.randint(1, 3))},
@@ -255,6 +258,7 @@ def create_hudi_table(table_name, table_path, table_type, partition_field=None):
         partition_clause=partition_clause,
     )
     spark.sql("drop table if exists " + table_name)
+    # print(create_table_sql)
     spark.sql(create_table_sql)
 
 
@@ -262,12 +266,14 @@ def write_hudi_table(
     table_name,
     table_path,
     table_type,
+    database,
     dataframe,
     partition_field=None,
 ):
     """Write DataFrame to Hudi table with specified configurations"""
     hudi_options = {
         "hoodie.table.name": table_name,
+        "hoodie.database.name": database,
         "hoodie.datasource.write.recordkey.field": "user_id",
         "hoodie.datasource.write.precombine.field": "event_time",
         "hoodie.datasource.write.table.type": table_type,
@@ -287,7 +293,9 @@ def init_hudi_table(table_name, table_type, database, dataframe, partition_field
     """Initialize a Hudi table with the specified configurations"""
     path_base = "hdfs://hdfs-cluster/user/hive/warehouse/"
     table_path = path_base + database + ".db/" + table_name
-    write_hudi_table(table_name, table_path, table_type, dataframe, partition_field)
+    write_hudi_table(
+        table_name, table_path, table_type, database, dataframe, partition_field
+    )
     create_hudi_table(table_name, table_path, table_type, partition_field)
     print(f"Table {table_name} successfully initialized!")
 
@@ -321,6 +329,8 @@ df = spark.createDataFrame(
 TABLE_NAME = "user_activity_log"
 DATABASE = "hudi_p2"
 
+spark.sql("create database if not exists " + DATABASE)
+spark.sql("use " + DATABASE)
 # Create various Hudi tables
 init_hudi_table(TABLE_NAME + "_cow_non_partition", "COPY_ON_WRITE", DATABASE, df)
 init_hudi_table(TABLE_NAME + "_mor_non_partition", "MERGE_ON_READ", DATABASE, df)
