@@ -4,7 +4,7 @@ shells to init the emr environment for hudi p2 case
 ## quick start
 ```bash
 python3 -m pip install -r requirements.txt
-python3 init_hudi_tables.py
+python3 init_hudi_tables.py --batch_size 1000 --num_batches 10
 ```
 
 ## cerate tables
