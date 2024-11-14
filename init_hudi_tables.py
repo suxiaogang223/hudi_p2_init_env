@@ -33,13 +33,13 @@ parser = argparse.ArgumentParser(
 parser.add_argument(
     "--batch_size",
     type=int,
-    default=100,
+    default=10000,
     help="Number of records to generate in each batch",
 )
 parser.add_argument(
     "--batch_num",
     type=int,
-    default=5,
+    default=10,
     help="Number of batches to write data in",
 )
 args = parser.parse_args()
