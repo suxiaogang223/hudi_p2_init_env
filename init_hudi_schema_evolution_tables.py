@@ -42,6 +42,7 @@ spark.sql(f"CREATE DATABASE IF NOT EXISTS {database}")
 spark.sql(f"USE {database}")
 
 # 1. 添加新列（Adding Columns）
+spark.sql("DROP TABLE IF EXISTS adding_simple_columns_table")
 initial_data = [("1", "Alice"), ("2", "Bob"), ("3", "Cathy")]
 initial_schema = StructType(
     [StructField("id", StringType(), True), StructField("name", StringType(), True)]
@@ -71,7 +72,7 @@ df_with_new_column.write.format("hudi").options(**hudi_options).mode("append").s
 
 spark.sql(
     f"""
-    CREATE TABLE IF NOT EXISTS adding_simple_columns_table (
+    CREATE TABLE adding_simple_columns_table (
         id STRING,
         name STRING,
         age INT
@@ -81,6 +82,7 @@ spark.sql(
 )
 
 # 2. 修改列类型（Altering Column Type）
+spark.sql("DROP TABLE IF EXISTS altering_simple_columns_table")
 initial_data_with_age = [("1", "Alice", 25), ("2", "Bob", 30), ("3", "Cathy", 28)]
 initial_schema_with_age = StructType(
     [
@@ -121,7 +123,7 @@ df_with_altered_column.write.format("hudi").options(**hudi_options).mode("append
 
 spark.sql(
     f"""
-    CREATE TABLE IF NOT EXISTS altering_simple_columns_table (
+    CREATE TABLE altering_simple_columns_table (
         id STRING,
         name STRING,
         age DOUBLE
@@ -131,6 +133,7 @@ spark.sql(
 )
 
 # 3. 删除列（Deleting Columns）
+spark.sql("DROP TABLE IF EXISTS deleting_simple_columns_table")
 initial_data_with_age = [("1", "Alice", 25), ("2", "Bob", 30), ("3", "Cathy", 28)]
 initial_schema_with_age = StructType(
     [
@@ -148,20 +151,20 @@ df_initial_with_age.write.format("hudi").options(**hudi_options).mode("overwrite
     table_path_base + "deleting_simple_columns_table"
 )
 
-# 删除 age 列
-data_without_age = [("4", "David"), ("5", "Eva"), ("6", "Frank")]
-schema_without_age = StructType(
-    [StructField("id", StringType(), True), StructField("name", StringType(), True)]
-)
+# # 删除 age 列
+# data_without_age = [("4", "David"), ("5", "Eva"), ("6", "Frank")]
+# schema_without_age = StructType(
+#     [StructField("id", StringType(), True), StructField("name", StringType(), True)]
+# )
 
-df_without_age = spark.createDataFrame(data_without_age, schema_without_age)
-df_without_age.write.format("hudi").options(**hudi_options).mode("append").save(
-    table_path_base + "deleting_simple_columns_table"
-)
+# df_without_age = spark.createDataFrame(data_without_age, schema_without_age)
+# df_without_age.write.format("hudi").options(**hudi_options).mode("append").save(
+#     table_path_base + "deleting_simple_columns_table"
+# )
 
 spark.sql(
     f"""
-    CREATE TABLE IF NOT EXISTS deleting_simple_columns_table (
+    CREATE TABLE deleting_simple_columns_table (
         id STRING,
         name STRING
     ) USING HUDI
@@ -170,6 +173,7 @@ spark.sql(
 )
 
 # 4. 重命名列 (Renaming Columns)
+spark.sql("DROP TABLE IF EXISTS renaming_simple_columns_table")
 initial_data = [("1", "Alice"), ("2", "Bob"), ("3", "Cathy")]
 initial_schema = StructType(
     [StructField("id", StringType(), True), StructField("name", StringType(), True)]
@@ -182,24 +186,24 @@ df.write.format("hudi").options(**hudi_options).mode("overwrite").save(
 )
 
 # 重命名 name 列为 full_name
-data_with_renamed_column = [("4", "David"), ("5", "Eva"), ("6", "Frank")]
-schema_with_renamed_column = StructType(
-    [
-        StructField("id", StringType(), True),
-        StructField("full_name", StringType(), True),
-    ]
-)
+# data_with_renamed_column = [("4", "David"), ("5", "Eva"), ("6", "Frank")]
+# schema_with_renamed_column = StructType(
+#     [
+#         StructField("id", StringType(), True),
+#         StructField("full_name", StringType(), True),
+#     ]
+# )
 
-df_with_renamed_column = spark.createDataFrame(
-    data_with_renamed_column, schema_with_renamed_column
-)
-df_with_renamed_column.write.format("hudi").options(**hudi_options).mode("append").save(
-    table_path_base + "renaming_simple_columns_table"
-)
+# df_with_renamed_column = spark.createDataFrame(
+#     data_with_renamed_column, schema_with_renamed_column
+# )
+# df_with_renamed_column.write.format("hudi").options(**hudi_options).mode("append").save(
+#     table_path_base + "renaming_simple_columns_table"
+# )
 
 spark.sql(
     f"""
-    CREATE TABLE IF NOT EXISTS renaming_simple_columns_table (
+    CREATE TABLE renaming_simple_columns_table (
         id STRING,
         full_name STRING
     ) USING HUDI
@@ -210,6 +214,7 @@ spark.sql(
 # 复杂类型列的测试
 
 # 1. 添加复杂类型列（Adding Columns）
+spark.sql("DROP TABLE IF EXISTS adding_complex_columns_table")
 initial_complex_data = [
     ("1", "Alice", (25, "Guangzhou")),
     ("2", "Bob", (30, "Shanghai")),
@@ -269,7 +274,7 @@ df_with_email.write.format("hudi").options(**hudi_options).mode("append").save(
 
 spark.sql(
     f"""
-    CREATE TABLE IF NOT EXISTS adding_complex_columns_table (
+    CREATE TABLE adding_complex_columns_table (
         id STRING,
         name STRING,
         info STRUCT<age: INT, address: STRING, email: STRING>
@@ -279,6 +284,7 @@ spark.sql(
 )
 
 # 2. 修改复杂类型结构体中的列类型（Altering Column Type）
+spark.sql("DROP TABLE IF EXISTS altering_complex_columns_table")
 data_with_altered_field = [
     ("1", "Alice", (25.5, "Guangzhou")),
     ("2", "Bob", (30.8, "Shanghai")),
@@ -342,7 +348,7 @@ df_with_altered_field.write.format("hudi").options(**hudi_options).mode("append"
 
 spark.sql(
     f"""
-    CREATE TABLE IF NOT EXISTS altering_complex_columns_table (
+    CREATE TABLE altering_complex_columns_table (
         id STRING,
         name STRING,
         info STRUCT<age: DOUBLE, address: STRING>
@@ -352,6 +358,7 @@ spark.sql(
 )
 
 # 3. 删除复杂类型结构体中的列（Deleting Columns）
+spark.sql("DROP TABLE IF EXISTS deleting_complex_columns_table")
 data_without_email = [
     ("4", "David", (25, "Shenzhen")),
     ("5", "Eva", (30, "Chengdu")),
@@ -379,28 +386,28 @@ df_without_email = spark.createDataFrame(data_without_email, schema_without_emai
 df_without_email.write.format("hudi").options(**hudi_options).mode("overwrite").save(
     table_path_base + "deleting_complex_columns_table"
 )
-# 删除 address 列
-data_without_address = [
-    ("4", "David", (25,)),
-    ("5", "Eva", (30,)),
-    ("6", "Frank", (28,)),
-]
-schema_without_address = StructType(
-    [
-        StructField("id", StringType(), True),
-        StructField("name", StringType(), True),
-        StructField(
-            "info",
-            StructType([StructField("age", IntegerType(), True)]),
-            True,
-        ),
-    ]
-)
-df_without_address = spark.createDataFrame(data_without_address, schema_without_address)
-df_without_address.write.format("hudi").options(**hudi_options).mode("append").save(
-    table_path_base + "deleting_complex_columns_table"
-)
 
+# 删除 address 列
+# data_without_address = [
+#     ("4", "David", (25,)),
+#     ("5", "Eva", (30,)),
+#     ("6", "Frank", (28,)),
+# ]
+# schema_without_address = StructType(
+#     [
+#         StructField("id", StringType(), True),
+#         StructField("name", StringType(), True),
+#         StructField(
+#             "info",
+#             StructType([StructField("age", IntegerType(), True)]),
+#             True,
+#         ),
+#     ]
+# )
+# df_without_address = spark.createDataFrame(data_without_address, schema_without_address)
+# df_without_address.write.format("hudi").options(**hudi_options).mode("append").save(
+#     table_path_base + "deleting_complex_columns_table"
+# )
 
 spark.sql(
     f"""
@@ -414,6 +421,7 @@ spark.sql(
 )
 
 # 4. 重命名复杂类型结构体中的列（Renaming Columns）
+spark.sql("DROP TABLE IF EXISTS renaming_complex_columns_table")
 data_with_renamed_field = [
     ("1", "Alice", (25, "Guangzhou")),
     ("2", "Bob", (30, "Shanghai")),
@@ -443,39 +451,40 @@ df_with_renamed_field = spark.createDataFrame(
 df_with_renamed_field.write.format("hudi").options(**hudi_options).mode("append").save(
     table_path_base + "renaming_complex_columns_table"
 )
-# 重命名 location 列为 address
-data_with_renamed_field = [
-    ("4", "David", (25, "Shenzhen")),
-    ("5", "Eva", (30, "Chengdu")),
-    ("6", "Frank", (28, "Wuhan")),
-]
-schema_with_renamed_field = StructType(
-    [
-        StructField("id", StringType(), True),
-        StructField("name", StringType(), True),
-        StructField(
-            "info",
-            StructType(
-                [
-                    StructField("age", IntegerType(), True),
-                    StructField("address", StringType(), True),
-                ]
-            ),
-            True,
-        ),
-    ]
-)
 
-df_with_renamed_field = spark.createDataFrame(
-    data_with_renamed_field, schema_with_renamed_field
-)
-df_with_renamed_field.write.format("hudi").options(**hudi_options).mode("append").save(
-    table_path_base + "renaming_complex_columns_table"
-)
+# 重命名 location 列为 address
+# data_with_renamed_field = [
+#     ("4", "David", (25, "Shenzhen")),
+#     ("5", "Eva", (30, "Chengdu")),
+#     ("6", "Frank", (28, "Wuhan")),
+# ]
+# schema_with_renamed_field = StructType(
+#     [
+#         StructField("id", StringType(), True),
+#         StructField("name", StringType(), True),
+#         StructField(
+#             "info",
+#             StructType(
+#                 [
+#                     StructField("age", IntegerType(), True),
+#                     StructField("address", StringType(), True),
+#                 ]
+#             ),
+#             True,
+#         ),
+#     ]
+# )
+
+# df_with_renamed_field = spark.createDataFrame(
+#     data_with_renamed_field, schema_with_renamed_field
+# )
+# df_with_renamed_field.write.format("hudi").options(**hudi_options).mode("append").save(
+#     table_path_base + "renaming_complex_columns_table"
+# )
 
 spark.sql(
     f"""
-    CREATE TABLE IF NOT EXISTS renaming_complex_columns_table (
+    CREATE TABLE renaming_complex_columns_table (
         id STRING,
         name STRING,
         info STRUCT<age: INT, address: STRING>
