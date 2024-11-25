@@ -5,6 +5,7 @@ CREATE TABLE one_partition_tb (
     id INT,
     name string
 )
+USING HUDI
 PARTITIONED BY (part1 INT);
 INSERT INTO one_partition_tb PARTITION (part1=2024) VALUES (1, 'Alice');
 INSERT INTO one_partition_tb PARTITION (part1=2024) VALUES (2, 'Bob');
@@ -17,6 +18,7 @@ CREATE TABLE two_partition_tb (
     id INT,
     name string
 )
+USING HUDI
 PARTITIONED BY (part1 STRING, part2 int);
 INSERT INTO two_partition_tb PARTITION (part1='US', part2=1) VALUES (1, 'Alice');
 INSERT INTO two_partition_tb PARTITION (part1='US', part2=1) VALUES (2, 'Bob');
@@ -34,6 +36,7 @@ CREATE TABLE three_partition_tb (
     id INT,
     name string
 )
+USING HUDI
 PARTITIONED BY (part1 STRING, part2 INT, part3 STRING);
 INSERT INTO three_partition_tb PARTITION (part1='US', part2=2024, part3='Q1') VALUES (1, 'Alice');
 INSERT INTO three_partition_tb PARTITION (part1='US', part2=2024, part3='Q1') VALUES (2, 'Bob');
