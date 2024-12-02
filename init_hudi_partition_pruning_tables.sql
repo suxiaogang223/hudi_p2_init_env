@@ -53,3 +53,116 @@ INSERT INTO three_partition_tb PARTITION (part1='EU', part2=2025, part3='Q3') VA
 INSERT INTO three_partition_tb PARTITION (part1='AS', part2=2025, part3='Q1') VALUES (13, 'Nina');
 INSERT INTO three_partition_tb PARTITION (part1='AS', part2=2025, part3='Q2') VALUES (14, 'Oscar');
 INSERT INTO three_partition_tb PARTITION (part1='AS', part2=2025, part3='Q3') VALUES (15, 'Paul');
+
+-- partition pruning with different data types
+-- 使用 BOOLEAN 类型作为分区列
+DROP TABLE IF EXISTS boolean_partition_tb;
+CREATE TABLE boolean_partition_tb (
+    id INT,
+    name STRING
+)
+USING HUDI
+PARTITIONED BY (part1 BOOLEAN);
+
+INSERT INTO boolean_partition_tb PARTITION (part1=true) VALUES (1, 'Alice');
+INSERT INTO boolean_partition_tb PARTITION (part1=true) VALUES (2, 'Bob');
+INSERT INTO boolean_partition_tb PARTITION (part1=false) VALUES (3, 'Charlie');
+INSERT INTO boolean_partition_tb PARTITION (part1=false) VALUES (4, 'David');
+
+-- 使用 TINYINT 类型作为分区列
+DROP TABLE IF EXISTS tinyint_partition_tb;
+CREATE TABLE tinyint_partition_tb (
+    id INT,
+    name STRING
+)
+USING HUDI
+PARTITIONED BY (part1 TINYINT);
+
+INSERT INTO tinyint_partition_tb PARTITION (part1=1) VALUES (1, 'Alice');
+INSERT INTO tinyint_partition_tb PARTITION (part1=1) VALUES (2, 'Bob');
+INSERT INTO tinyint_partition_tb PARTITION (part1=2) VALUES (3, 'Charlie');
+INSERT INTO tinyint_partition_tb PARTITION (part1=2) VALUES (4, 'David');
+
+-- 使用 SMALLINT 类型作为分区列
+DROP TABLE IF EXISTS smallint_partition_tb;
+CREATE TABLE smallint_partition_tb (
+    id INT,
+    name STRING
+)
+USING HUDI
+PARTITIONED BY (part1 SMALLINT);
+
+INSERT INTO smallint_partition_tb PARTITION (part1=10) VALUES (1, 'Alice');
+INSERT INTO smallint_partition_tb PARTITION (part1=10) VALUES (2, 'Bob');
+INSERT INTO smallint_partition_tb PARTITION (part1=20) VALUES (3, 'Charlie');
+INSERT INTO smallint_partition_tb PARTITION (part1=20) VALUES (4, 'David');
+
+-- 使用 INT 类型作为分区列
+DROP TABLE IF EXISTS int_partition_tb;
+CREATE TABLE int_partition_tb (
+    id INT,
+    name STRING
+)
+USING HUDI
+PARTITIONED BY (part1 INT);
+
+INSERT INTO int_partition_tb PARTITION (part1=100) VALUES (1, 'Alice');
+INSERT INTO int_partition_tb PARTITION (part1=100) VALUES (2, 'Bob');
+INSERT INTO int_partition_tb PARTITION (part1=200) VALUES (3, 'Charlie');
+INSERT INTO int_partition_tb PARTITION (part1=200) VALUES (4, 'David');
+
+-- 使用 BIGINT 类型作为分区列
+DROP TABLE IF EXISTS bigint_partition_tb;
+CREATE TABLE bigint_partition_tb (
+    id INT,
+    name STRING
+)
+USING HUDI
+PARTITIONED BY (part1 BIGINT);
+
+INSERT INTO bigint_partition_tb PARTITION (part1=1234567890) VALUES (1, 'Alice');
+INSERT INTO bigint_partition_tb PARTITION (part1=1234567890) VALUES (2, 'Bob');
+INSERT INTO bigint_partition_tb PARTITION (part1=9876543210) VALUES (3, 'Charlie');
+INSERT INTO bigint_partition_tb PARTITION (part1=9876543210) VALUES (4, 'David');
+
+-- 使用 STRING 类型作为分区列
+DROP TABLE IF EXISTS string_partition_tb;
+CREATE TABLE string_partition_tb (
+    id INT,
+    name STRING
+)
+USING HUDI
+PARTITIONED BY (part1 STRING);
+
+INSERT INTO string_partition_tb PARTITION (part1='RegionA') VALUES (1, 'Alice');
+INSERT INTO string_partition_tb PARTITION (part1='RegionA') VALUES (2, 'Bob');
+INSERT INTO string_partition_tb PARTITION (part1='RegionB') VALUES (3, 'Charlie');
+INSERT INTO string_partition_tb PARTITION (part1='RegionB') VALUES (4, 'David');
+
+-- 使用 DATE 类型作为分区列
+DROP TABLE IF EXISTS date_partition_tb;
+CREATE TABLE date_partition_tb (
+    id INT,
+    name STRING
+)
+USING HUDI
+PARTITIONED BY (part1 DATE);
+
+INSERT INTO date_partition_tb PARTITION (part1=DATE '2023-12-01') VALUES (1, 'Alice');
+INSERT INTO date_partition_tb PARTITION (part1=DATE '2023-12-01') VALUES (2, 'Bob');
+INSERT INTO date_partition_tb PARTITION (part1=DATE '2024-01-01') VALUES (3, 'Charlie');
+INSERT INTO date_partition_tb PARTITION (part1=DATE '2024-01-01') VALUES (4, 'David');
+
+-- 使用 TIMESTAMP 类型作为分区列
+DROP TABLE IF EXISTS timestamp_partition_tb;
+CREATE TABLE timestamp_partition_tb (
+    id INT,
+    name STRING
+)
+USING HUDI
+PARTITIONED BY (part1 TIMESTAMP);
+
+INSERT INTO timestamp_partition_tb PARTITION (part1=TIMESTAMP '2023-12-01 08:00:00') VALUES (1, 'Alice');
+INSERT INTO timestamp_partition_tb PARTITION (part1=TIMESTAMP '2023-12-01 08:00:00') VALUES (2, 'Bob');
+INSERT INTO timestamp_partition_tb PARTITION (part1=TIMESTAMP '2024-01-01 10:00:00') VALUES (3, 'Charlie');
+INSERT INTO timestamp_partition_tb PARTITION (part1=TIMESTAMP '2024-01-01 10:00:00') VALUES (4, 'David');
